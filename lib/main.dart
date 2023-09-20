@@ -1,6 +1,7 @@
 // ignore_for_file: must_be_immutable
 
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
 // ignore: unused_import
 import 'package:intl/intl.dart';
 
@@ -20,26 +21,57 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
       ),
-      home: MyHomePage(
-        selectedDate: null,
-      ),
+      home: const MyHomePage(),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  DateTime? selectedDate;
-  MyHomePage({super.key, required this.selectedDate});
+  const MyHomePage({
+    super.key,
+  });
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  var selectedDate;
+  late DateTime selectedDate;
+  DateTime dateTime = DateTime.now();
+
+  @override
+  void initState() {
+    initializeDateFormatting();
+    selectedDate = DateTime.now();
+    super.initState();
+  }
+
+  Future<void> _selectDateBorrowed(BuildContext context) async {
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2030),
+      initialDatePickerMode: DatePickerMode.year,
+      helpText: "TUG'ILGAN YILNI TANLANG!",
+      cancelText: "BEKOR QILISH",
+      confirmText: "TANLASH",
+    );
+    if (picked != null && picked != selectedDate) {
+      setState(
+        () {
+          selectedDate = picked;
+        },
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    var formattedate = DateFormat(
+      'y',
+      'uz',
+    ).format(dateTime);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue,
@@ -51,9 +83,15 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
             selectedDate == null
                 ? const Text("")
-                : const Text(
-                    "Tug'ilgan Yoshingiz:  ",
-                    style: TextStyle(
+                : Text(
+                    "Tug'ilgan Yoshingiz: ${int.parse(
+                          DateFormat("y").format(
+                            DateTime.now(),
+                          ),
+                        ) - int.parse(
+                          DateFormat("y").format(selectedDate),
+                        )} da",
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
@@ -62,28 +100,11 @@ class _MyHomePageState extends State<MyHomePage> {
               height: 15,
             ),
             ElevatedButton(
-                onPressed: () {
-                  showDatePicker(
-                    context: context,
-                    initialDate: selectedDate ?? DateTime.now(),
-                    firstDate: DateTime(1000),
-                    lastDate: DateTime.now(),
-                    helpText: "TUG'ILGAN YILNI TANLANG!",
-                    cancelText: "BEKOR QILISH",
-                    confirmText: "TANLASH",
-                  ).then(
-                    (value) {
-                      if (value != null) {
-                        setState(() {
-                          selectedDate = value;
-                          print(DateTime.now());
-                   
-                        });
-                      }
-                    },
-                  );
-                },
-                child: const Text("Yilni tanlash!"))
+              onPressed: () {
+                _selectDateBorrowed(context);
+              },
+              child: const Text("Yilni tanlash!"),
+            ),
           ],
         ),
       ),
